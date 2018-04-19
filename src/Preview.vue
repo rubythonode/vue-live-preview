@@ -12,7 +12,7 @@
 
 <script>
 
-  import Vue from 'vue'
+  import { _Vue as Vue } from './index'
   import Babel from 'babel-standalone'
 
   export default {
@@ -66,6 +66,8 @@
       },
       change (code) {
 
+        console.log(code)
+
         const html = document.createElement('div')
         html.innerHTML = code
 
@@ -101,8 +103,8 @@
 
         if (monofile && typeof script === 'string') {
           try {
-            let js = this.babel.transform(script, { presets: ['es2015'] }).code
             const exports = {}
+            let js = Babel.transform(script, { presets: ['es2015'] }).code
             data = eval(js)
           } catch(e) {}
         }
@@ -112,20 +114,20 @@
           this.template = template
           this.script = script
 
-          new this.Vue({
+          new Vue({
             el: '#component',
             template: `<div id="component"><div id="content"></div></div>`,
           })
 
           if (monofile) {
-            new this.Vue(Object.assign({
+            new Vue(Object.assign({
               el: '#content',
               template: template,
             }, data))
           } else {
             document.getElementById('content').innerHTML = template
             try {
-              eval(script.replace(/Vue\(/g, 'this.Vue(').replace(/Vue\./g, 'this.Vue.'))
+              eval(script)
             } catch(e) {}
           }
         }
@@ -141,23 +143,10 @@
       },
     },
     mounted() {
-
-      if (window && window.Vue) {
-        this.Vue = window.Vue
-      } else {
-        this.Vue = Vue
-      }
-
-      if (Babel) {
-        this.babel = Babel
-      } else {
-        this.babel = require('babel-standalone')
-      }
-
       this.init(this.code);
 
-      this.Vue.config.errorHandler = (error) => console.warn(error)
-      this.Vue.config.warnHandler = (error) => console.warn(error)
+      Vue.config.errorHandler = (error) => console.warn(error)
+      Vue.config.warnHandler = (error) => console.warn(error)
     },
     watch: {
       showCode (value) {
